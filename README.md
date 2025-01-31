@@ -1,6 +1,6 @@
 # Tournament Database - Ktor API
 
-API REST en **Kotlin** avec **Ktor** et **MongoDB**  
+API REST en **Kotlin** avec **Ktor** et **MongoDB**
 
 ## Prérequis
 
@@ -41,6 +41,11 @@ http://127.0.0.1:8080/swagger
 
 ## Exécuter les Tests
 
+Il faut que vous ayez docker de lancé
+
 ```bash
 ./start_tests.sh
 ```
+
+### Le rapport HTML
+Le rapport HTML des tests se trouve dans `build/reports/tests/test/index.html`
