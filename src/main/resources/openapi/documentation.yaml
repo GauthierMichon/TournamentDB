@@ -1,0 +1,398 @@
+openapi: 3.0.3
+info:
+  title: Tournament API
+  description: API pour la gestion des tournois et des joueurs
+  version: 1.0.0
+
+servers:
+  - url: http://127.0.0.1:8080
+    description: Serveur local
+
+paths:
+  /tournaments:
+    get:
+      summary: Récupérer tous les tournois
+      tags:
+        - Tournaments
+      description: Retourne la liste de tous les tournois disponibles
+      operationId: getAllTournaments
+      parameters:
+        - name: isOpen
+          in: query
+          description: Filtrer les tournois ouverts (true) ou fermés (false)
+          schema:
+            type: boolean
+          required: false
+        - name: limit
+          in: query
+          description: Nombre maximum de résultats à afficher
+          schema:
+            type: integer
+            default: 10
+          required: false
+        - name: page
+          in: query
+          description: Numéro de la page
+          schema:
+            type: integer
+            default: 0
+          required: false
+      responses:
+        "200":
+          description: Liste des tournois
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TournamentDTO"
+        "500":
+          description: Erreur serveur
+
+    post:
+      summary: Ajouter un tournoi
+      tags:
+        - Tournaments
+      description: Ajoute un nouveau tournoi avec les informations fournies
+      operationId: addTournament
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TournamentDTO"
+      responses:
+        "201":
+          description: Tournoi ajouté avec succès
+        "400":
+          description: Données invalides
+        "500":
+          description: Erreur serveur
+
+  /tournaments/{id}:
+    get:
+      summary: Récupérer un tournoi par ID
+      tags:
+        - Tournaments
+      description: Retourne un tournoi spécifique en fonction de son ID
+      operationId: getTournamentById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID du tournoi
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Détails du tournoi
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TournamentDTO"
+        "400":
+          description: Données invalides
+        "404":
+          description: Tournoi non trouvé
+        "500":
+          description: Erreur serveur
+
+  /tournaments/{id}/players:
+    get:
+      summary: Récupérer tous les joueurs d'un tournoi
+      tags:
+        - Tournaments
+      description: Retourne la liste des joueurs inscrits dans un tournoi
+      operationId: getAllPlayersFromTournament
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID du tournoi
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Liste des joueurs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PlayerDTO"
+        "400":
+          description: Données invalides
+        "404":
+          description: Tournoi non trouvé
+        "500":
+          description: Erreur serveur
+
+    post:
+      summary: Ajouter un joueur à un tournoi
+      tags:
+        - Tournaments
+      description: Inscrit un nouveau joueur dans un tournoi existant
+      operationId: addPlayerToTournament
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID du tournoi
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PlayerDTO"
+      responses:
+        "200":
+          description: Joueur ajouté avec succès
+        "400":
+          description: Données invalides
+        "404":
+          description: Tournoi non trouvé
+        "500":
+          description: Erreur serveur
+
+  /tournaments/{id}/players/{playerId}:
+    get:
+      summary: Récupérer un joueur par ID dans un tournoi
+      tags:
+        - Tournaments
+      description: Retourne les détails d'un joueur spécifique dans un tournoi donné
+      operationId: getPlayerFromTournamentById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID du tournoi
+          schema:
+            type: string
+        - name: playerId
+          in: path
+          required: true
+          description: ID du joueur
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Détails du joueur
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PlayerDTO"
+        "400":
+          description: Données invalides
+        "404":
+          description: Joueur ou tournoi non trouvé
+        "500":
+          description: Erreur serveur
+
+  /tournaments/{id}/players/{playerId}/points:
+    put:
+      summary: Mettre à jour les points d'un joueur
+      tags:
+        - Tournaments
+      description: Modifie le score d'un joueur dans un tournoi spécifique
+      operationId: updatePlayerPoints
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID du tournoi
+          schema:
+            type: string
+        - name: playerId
+          in: path
+          required: true
+          description: ID du joueur
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: number
+              format: float
+      responses:
+        "200":
+          description: Points mis à jour avec succès
+        "400":
+          description: Valeur de points invalide
+        "404":
+          description: Tournoi ou joueur non trouvé
+        "500":
+          description: Erreur serveur
+
+  /tournaments/{id}/players/{playerId}/steal/{targetId}:
+    put:
+      summary: Voler des points à un autre joueur
+      tags:
+        - Tournaments
+      description: Permet à un joueur de voler des points à un autre joueur du même tournoi
+      operationId: stealPoints
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID du tournoi
+          schema:
+            type: string
+        - name: playerId
+          in: path
+          required: true
+          description: ID du joueur qui vole
+          schema:
+            type: string
+        - name: targetId
+          in: path
+          required: true
+          description: ID du joueur ciblé
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: integer
+              description: Nombre de points à voler
+      responses:
+        "200":
+          description: Vol réussi
+        "400":
+          description: Requête invalide (points insuffisants, mauvaise valeur)
+        "404":
+          description: Tournoi ou joueurs non trouvés
+        "500":
+          description: Erreur serveur
+
+  /tournaments/{id}/close:
+    post:
+      summary: Fermer un tournoi
+      tags:
+        - Tournaments
+      description: Passe le tournoi en mode fermé et supprime tous les joueurs
+      operationId: closeTournament
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID du tournoi
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Tournoi fermé avec succès
+        "404":
+          description: Tournoi non trouvé
+        "500":
+          description: Erreur serveur
+
+components:
+  schemas:
+    TournamentDTO:
+      type: object
+      properties:
+        _id:
+          type: string
+          nullable: true
+        name:
+          type: string
+        isOpen:
+          type: boolean
+          nullable: true
+        startDate:
+          type: string
+          format: date-time
+          nullable: true
+        endDate:
+          type: string
+          format: date-time
+          nullable: true
+        players:
+          type: array
+          items:
+            $ref: "#/components/schemas/PlayerDTO"
+          nullable: true
+
+    PlayerDTO:
+      type: object
+      properties:
+        playerId:
+          type: string
+        pseudo:
+          type: string
+        points:
+          type: integer
+          nullable: true
+        rank:
+          type: integer
+          nullable: true
+
+    Tournament:
+      type: object
+      properties:
+        _id:
+          type: string
+        name:
+          type: string
+        isOpen:
+          type: boolean
+        startDate:
+          type: string
+          format: date-time
+        endDate:
+          type: string
+          format: date-time
+          nullable: true
+        players:
+          type: array
+          items:
+            $ref: "#/components/schemas/Player"
+          nullable: true
+
+    Player:
+      type: object
+      properties:
+        playerId:
+          type: string
+        pseudo:
+          type: string
+        points:
+          type: integer
+
+    TournamentDAO:
+      type: object
+      properties:
+        _id:
+          type: string
+        name:
+          type: string
+        isOpen:
+          type: boolean
+        startDate:
+          type: string
+          format: date-time
+        endDate:
+          type: string
+          format: date-time
+          nullable: true
+        players:
+          type: array
+          items:
+            $ref: "#/components/schemas/PlayerDAO"
+          nullable: true
+
+    PlayerDAO:
+      type: object
+      properties:
+        playerId:
+          type: string
+        pseudo:
+          type: string
+        points:
+          type: integer
